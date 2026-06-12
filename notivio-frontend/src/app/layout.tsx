@@ -34,9 +34,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`dark ${inter.variable} ${outfit.variable}`}>
-      <head>
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-      </head>
       <body className="min-h-screen bg-background font-sans antialiased overflow-x-hidden">
         <QueryProvider>
           {children}
