@@ -1,0 +1,523 @@
+# ============================================================
+#         NOTIVIO — COMPLETE SETUP GUIDE
+#   Everything you need, step by step, with exact instructions
+# ============================================================
+
+This file tells you EXACTLY what you need, WHY you need it,
+and HOW to get it — step by step.
+
+Total setup time: ~30–45 minutes
+Cost: 100% FREE
+
+================================================================
+WHAT YOU NEED (OVERVIEW)
+================================================================
+
+  1. Java 21 (JDK)
+  2. Maven 3.9+
+  3. Docker Desktop
+  4. PostgreSQL (via Docker OR Supabase free cloud)
+  5. Google Cloud Project (Gmail API + Calendar API + OAuth2)
+  6. Groq API Key (free AI — primary)
+  7. OpenRouter API Key (free AI — fallback)
+  8. Firebase Project (for push notifications)
+
+================================================================
+STEP 1 — INSTALL JAVA 21 (JDK)
+================================================================
+
+WHY: The backend is built with Java 21. You need JDK (not JRE).
+
+HOW TO GET IT:
+  → Go to: https://adoptium.net/temurin/releases/
+  → Select:
+      Version   : 21
+      OS        : Windows
+      Package   : JDK
+      Type      : .msi (installer)
+  → Download and run the installer
+  → Click Next → Next → Install → Finish
+
+VERIFY INSTALLATION:
+  Open PowerShell and run:
+    java -version
+
+  You should see:
+    openjdk version "21.x.x" ...
+
+================================================================
+STEP 2 — INSTALL MAVEN 3.9
+================================================================
+
+WHY: Maven is the build tool used to compile and package the project.
+
+HOW TO GET IT:
+  → Go to: https://maven.apache.org/download.cgi
+  → Download: apache-maven-3.9.x-bin.zip
+  → Extract it to: C:\Program Files\Maven\
+  → Add to PATH:
+      1. Search "Environment Variables" in Windows
+      2. Click "Environment Variables" button
+      3. Under "System variables" → find "Path" → Edit
+      4. Click "New" → Add: C:\Program Files\Maven\apache-maven-3.9.x\bin
+      5. Click OK everywhere
+
+VERIFY:
+  Open NEW PowerShell and run:
+    mvn -version
+
+  You should see:
+    Apache Maven 3.9.x ...
+
+================================================================
+STEP 3 — INSTALL DOCKER DESKTOP
+================================================================
+
+WHY: Used to run PostgreSQL database locally in a container.
+     Also used to build and deploy the app.
+
+HOW TO GET IT:
+  → Go to: https://www.docker.com/products/docker-desktop/
+  → Click "Download for Windows"
+  → Run the installer
+  → Restart your computer when prompted
+  → Open Docker Desktop and wait for it to say "Engine running"
+
+VERIFY:
+  Open PowerShell and run:
+    docker --version
+    docker-compose --version
+
+================================================================
+STEP 4 — GOOGLE CLOUD PROJECT SETUP
+================================================================
+
+WHY: You need this for:
+  - Google Login (OAuth2) for users
+  - Reading Gmail emails
+  - Creating Google Calendar events
+
+HOW TO SET UP (detailed steps):
+
+  ── PART A: Create Google Cloud Project ──────────────────────
+
+  1. Go to: https://console.cloud.google.com/
+  2. Sign in with your Google account
+  3. At the top, click the project dropdown (says "Select a project")
+  4. Click "NEW PROJECT"
+  5. Project name: Notivio
+  6. Click "CREATE"
+  7. Wait a few seconds, then select "Notivio" from the dropdown
+
+  ── PART B: Enable Required APIs ─────────────────────────────
+
+  8. In the left menu → click "APIs & Services" → "Library"
+  9. Search for and ENABLE each of these (click each, then "ENABLE"):
+
+     ✅ Gmail API
+        Search: "Gmail API" → Click it → Click "ENABLE"
+
+     ✅ Google Calendar API
+        Search: "Google Calendar API" → Click it → Click "ENABLE"
+
+     ✅ Google People API
+        Search: "Google People API" → Click it → Click "ENABLE"
+
+  ── PART C: Configure OAuth Consent Screen ───────────────────
+
+  10. Left menu → "APIs & Services" → "OAuth consent screen"
+  11. Select: "External" → Click "CREATE"
+  12. Fill in:
+        App name          : Notivio
+        User support email: your-email@gmail.com
+        Developer contact : your-email@gmail.com
+  13. Click "SAVE AND CONTINUE"
+  14. On "Scopes" page → Click "ADD OR REMOVE SCOPES"
+  15. Add these scopes manually by pasting in the filter box:
+        https://www.googleapis.com/auth/gmail.readonly
+        https://www.googleapis.com/auth/calendar
+        https://www.googleapis.com/auth/userinfo.email
+        https://www.googleapis.com/auth/userinfo.profile
+  16. Click "UPDATE" → "SAVE AND CONTINUE"
+  17. On "Test Users" page → Click "ADD USERS"
+  18. Add your own Gmail address (important! must add yourself as test user)
+  19. Click "SAVE AND CONTINUE" → "BACK TO DASHBOARD"
+
+  ── PART D: Create OAuth2 Credentials ────────────────────────
+
+  20. Left menu → "APIs & Services" → "Credentials"
+  21. Click "+ CREATE CREDENTIALS" → "OAuth client ID"
+  22. Application type: "Web application"
+  23. Name: "Notivio Web Client"
+  24. Under "Authorized redirect URIs" → click "ADD URI"
+  25. Add this EXACTLY:
+        http://localhost:8080/login/oauth2/code/google
+  26. Click "CREATE"
+  27. A popup appears showing:
+        Client ID     → COPY THIS (looks like: xxxx.apps.googleusercontent.com)
+        Client Secret → COPY THIS (looks like: GOCSPX-xxxx)
+  28. Save both values — you'll put them in .env file
+
+  ✅ YOUR VALUES:
+     GOOGLE_CLIENT_ID     = (paste what you copied)
+     GOOGLE_CLIENT_SECRET = (paste what you copied)
+
+================================================================
+STEP 5 — GROQ API KEY (Free AI — Primary)
+================================================================
+
+WHY: Notivio uses Groq's free LLaMA3 AI model to read emails
+     and extract deadlines, task types, and priorities.
+
+Free tier: 14,400 requests/day — more than enough.
+
+HOW TO GET IT:
+
+  1. Go to: https://console.groq.com/
+  2. Click "Sign Up" (use Google or email)
+  3. After login → click "API Keys" in the left sidebar
+  4. Click "+ Create API Key"
+  5. Name: "Notivio"
+  6. Click "Submit"
+  7. COPY the key that appears (starts with: gsk_...)
+     ⚠️ You can only see it ONCE. Copy it now!
+
+  ✅ YOUR VALUE:
+     GROQ_API_KEY = gsk_xxxxxxxxxxxxxxxxxx
+
+  Free model used: llama3-8b-8192
+  Rate limit: 30 req/min, 14,400 req/day, 500K tokens/day
+
+================================================================
+STEP 6 — OPENROUTER API KEY (Free AI — Fallback)
+================================================================
+
+WHY: If Groq is down or rate-limited, the backend automatically
+     switches to OpenRouter. This ensures 24/7 AI availability.
+
+HOW TO GET IT:
+
+  1. Go to: https://openrouter.ai/
+  2. Click "Sign In" → use Google account
+  3. After login → click your profile icon (top right)
+  4. Click "Keys"
+  5. Click "Create Key"
+  6. Name: "Notivio Fallback"
+  7. Click "Create"
+  8. COPY the key (starts with: sk-or-...)
+
+  ✅ YOUR VALUE:
+     OPENROUTER_API_KEY = sk-or-xxxxxxxxxxxxxxxxxx
+
+  Free model used: meta-llama/llama-3-8b-instruct:free
+  No credit card required for free models.
+
+================================================================
+STEP 7 — FIREBASE PROJECT (Push Notifications)
+================================================================
+
+WHY: Firebase Cloud Messaging (FCM) is used to send push
+     notifications to mobile/web devices when reminders are due.
+
+HOW TO GET IT:
+
+  ── PART A: Create Firebase Project ──────────────────────────
+
+  1. Go to: https://console.firebase.google.com/
+  2. Click "Create a project" (or "Add project")
+  3. Project name: Notivio
+  4. Click "Continue"
+  5. Google Analytics: you can disable it → Click "Create project"
+  6. Wait for setup → Click "Continue"
+
+  ── PART B: Enable Cloud Messaging ───────────────────────────
+
+  7. In Firebase Console → left sidebar → click ⚙️ (gear icon) → "Project settings"
+  8. Click "Cloud Messaging" tab
+  9. Make sure "Firebase Cloud Messaging API (V1)" is ENABLED
+     If not → click "Enable"
+
+  ── PART C: Get Service Account Key ──────────────────────────
+
+  10. Still in Project settings → click "Service accounts" tab
+  11. Click "Generate new private key" button
+  12. Click "Generate key" in the popup
+  13. A JSON file downloads to your computer
+      (looks like: notivio-firebase-adminsdk-xxxx.json)
+  14. Open that file with Notepad
+  15. Select ALL the text (Ctrl+A) → Copy it
+
+  ── PART D: Convert to Base64 ────────────────────────────────
+
+  WHY: We store the JSON as Base64 in an environment variable
+       so we don't need to upload files to cloud servers.
+
+  16. Open PowerShell
+  17. Run this command (replace the path with YOUR file path):
+
+      $json = Get-Content "C:\Users\YourName\Downloads\notivio-firebase-adminsdk-xxxx.json" -Raw
+      [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($json))
+
+  18. Copy the long Base64 string that appears
+
+  ✅ YOUR VALUE:
+     FIREBASE_SERVICE_ACCOUNT_BASE64 = (paste the long base64 string)
+
+================================================================
+STEP 8 — DATABASE SETUP (Choose ONE option)
+================================================================
+
+── OPTION A: Local Docker (Easiest for Development) ──────────
+
+  No signup needed. Runs on your computer.
+
+  1. Make sure Docker Desktop is running
+  2. The docker-compose.yml already sets up PostgreSQL for you
+  3. When you run: docker-compose up -d
+     → PostgreSQL starts automatically at localhost:5432
+     → Database "notivio" is auto-created
+
+  ✅ YOUR VALUES:
+     DB_URL      = jdbc:postgresql://localhost:5432/notivio
+     DB_USERNAME = notivio_user
+     DB_PASSWORD = (choose any password, e.g. notivio_pass_2024)
+
+
+── OPTION B: Supabase (Free Cloud Database — for Deployment) ──
+
+  WHY: If you deploy to Render/Railway, you need a cloud database.
+  Free tier: 500MB, no credit card.
+
+  1. Go to: https://supabase.com/
+  2. Click "Start your project" → Sign up with GitHub
+  3. Click "New Project"
+  4. Organization: your username
+  5. Project name: notivio
+  6. Database password: choose a strong password → SAVE IT
+  7. Region: choose nearest to you
+  8. Click "Create new project" → wait 2-3 minutes
+
+  9. After setup → left sidebar → click "Project Settings"
+  10. Click "Database" tab
+  11. Scroll down to "Connection string" section
+  12. Select "URI" tab
+  13. Copy the connection string
+      (looks like: postgresql://postgres:PASSWORD@db.xxxx.supabase.co:5432/postgres)
+  14. Replace [YOUR-PASSWORD] with the password you chose in step 6
+
+  ✅ YOUR VALUES:
+     DB_URL      = jdbc:postgresql://db.xxxx.supabase.co:5432/postgres
+     DB_USERNAME = postgres
+     DB_PASSWORD = (the password you chose)
+
+================================================================
+STEP 9 — GENERATE SECURITY KEYS
+================================================================
+
+WHY: JWT_SECRET signs login tokens. ENCRYPTION_KEY encrypts
+     Gmail tokens stored in the database.
+
+HOW TO GENERATE:
+
+  Open PowerShell and run:
+
+  # Generate JWT_SECRET (random 64-char string)
+  -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 64 | ForEach-Object {[char]$_})
+
+  # Generate ENCRYPTION_KEY (exactly 32 chars)
+  -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 32 | ForEach-Object {[char]$_})
+
+  Copy the outputs and use them in your .env file.
+
+  ✅ YOUR VALUES:
+     JWT_SECRET     = (64-char random string you generated)
+     ENCRYPTION_KEY = (32-char random string you generated)
+
+================================================================
+STEP 10 — CREATE YOUR .env FILE
+================================================================
+
+  1. In the Notivio project folder, copy the example file:
+
+     Copy-Item .env.example .env
+
+  2. Open .env with Notepad or VS Code:
+
+     notepad .env
+
+  3. Fill in ALL the values:
+
+     # ── Database ──────────────────────────
+     DB_URL=jdbc:postgresql://localhost:5432/notivio
+     DB_USERNAME=notivio_user
+     DB_PASSWORD=your_chosen_password
+
+     # ── Google OAuth2 ──────────────────────
+     GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+     GOOGLE_CLIENT_SECRET=GOCSPX-xxxx
+
+     # ── JWT & Encryption ───────────────────
+     JWT_SECRET=your_64_char_random_string
+     ENCRYPTION_KEY=your_32_char_random_string
+
+     # ── AI APIs ────────────────────────────
+     GROQ_API_KEY=gsk_xxxx
+     OPENROUTER_API_KEY=sk-or-xxxx
+
+     # ── Firebase FCM ───────────────────────
+     FIREBASE_SERVICE_ACCOUNT_BASE64=eyJ0eXBlIjoic....(long base64)
+
+     # ── App URLs ───────────────────────────
+     APP_BASE_URL=http://localhost:8080
+     FRONTEND_URL=http://localhost:3000
+
+  4. Save the file
+
+================================================================
+STEP 11 — RUN THE APPLICATION
+================================================================
+
+  ── Method A: Docker Compose (Recommended) ───────────────────
+
+  1. Open PowerShell in the Notivio folder
+  2. Run:
+       docker-compose up -d
+
+  3. Wait about 60 seconds for startup
+  4. Check logs:
+       docker-compose logs -f app
+
+  5. Test it:
+       Open browser → http://localhost:8080/health
+       You should see: {"status":"UP",...}
+
+  6. Open Swagger UI:
+       http://localhost:8080/swagger-ui.html
+
+
+  ── Method B: Maven (Development) ────────────────────────────
+
+  1. Start PostgreSQL first:
+       docker-compose up -d db
+
+  2. Run the Spring Boot app:
+       mvn spring-boot:run
+
+  3. Open: http://localhost:8080/health
+
+
+================================================================
+STEP 12 — TEST GOOGLE LOGIN
+================================================================
+
+  1. Open browser → go to:
+       http://localhost:8080/oauth2/authorization/google
+
+  2. You'll be redirected to Google login
+  3. Sign in with the Gmail account you added as "Test User" in Step 4
+  4. After login → you'll get a JSON response with:
+       {
+         "accessToken": "eyJhbGci...",
+         "refreshToken": "eyJhbGci...",
+         "user": { "email": "...", "name": "..." }
+       }
+
+  5. Copy the "accessToken" value
+  6. In Swagger UI → click "Authorize" button
+  7. Paste: Bearer <your_accessToken>
+  8. Now all API calls are authenticated ✅
+
+
+================================================================
+QUICK CHECKLIST
+================================================================
+
+  [ ] Java 21 installed  (java -version)
+  [ ] Maven installed    (mvn -version)
+  [ ] Docker installed   (docker --version)
+
+  [ ] Google Cloud Project created
+  [ ] Gmail API enabled
+  [ ] Google Calendar API enabled
+  [ ] OAuth2 credentials created
+  [ ] Redirect URI added: http://localhost:8080/login/oauth2/code/google
+  [ ] Your email added as Test User
+
+  [ ] Groq API key obtained    (gsk_...)
+  [ ] OpenRouter key obtained  (sk-or-...)
+  [ ] Firebase project created
+  [ ] Firebase service account JSON downloaded
+  [ ] Firebase JSON converted to Base64
+
+  [ ] .env file created and filled in
+  [ ] docker-compose up -d runs successfully
+  [ ] http://localhost:8080/health returns {"status":"UP"}
+  [ ] Google login flow works
+
+
+================================================================
+TROUBLESHOOTING
+================================================================
+
+PROBLEM: "invalid_client" on Google login
+FIX: Check GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env
+     Make sure redirect URI matches EXACTLY in Google Console
+
+PROBLEM: Database connection failed
+FIX: Make sure Docker is running: docker-compose up -d db
+     Check DB_URL, DB_USERNAME, DB_PASSWORD in .env
+
+PROBLEM: "No AI provider configured"
+FIX: Check GROQ_API_KEY is set in .env and starts with gsk_
+
+PROBLEM: FCM notifications not sending
+FIX: Check FIREBASE_SERVICE_ACCOUNT_BASE64 is set
+     It must be the FULL base64 of the JSON file (no line breaks)
+
+PROBLEM: Port 8080 already in use
+FIX: Add SERVER_PORT=8081 to .env
+     Update Google Console redirect URI to use port 8081
+
+PROBLEM: Maven not found
+FIX: Restart PowerShell after adding Maven to PATH
+     Or use: C:\Program Files\Maven\apache-maven-3.9.x\bin\mvn
+
+
+================================================================
+FREE CLOUD DEPLOYMENT
+================================================================
+
+To deploy 24/7 for free:
+
+BACKEND (choose one):
+  • Render.com   → Connect GitHub → Use render.yaml → Set env vars
+  • Railway.app  → Connect GitHub → Auto-detects Dockerfile
+  • Fly.io       → fly launch → fly deploy
+
+DATABASE (choose one):
+  • Supabase     → 500MB free PostgreSQL (best option)
+  • Railway      → 1GB free PostgreSQL
+
+AFTER DEPLOYING:
+  • Update APP_BASE_URL to your deployed URL (e.g. https://notivio.onrender.com)
+  • Update Google Console redirect URI to: https://notivio.onrender.com/login/oauth2/code/google
+  • Update KEEPALIVE_URL to your deployed URL + /health
+
+
+================================================================
+SUPPORT LINKS
+================================================================
+
+  Google Cloud Console   → https://console.cloud.google.com
+  Groq Console           → https://console.groq.com
+  OpenRouter             → https://openrouter.ai
+  Firebase Console       → https://console.firebase.google.com
+  Supabase               → https://supabase.com
+  Render                 → https://render.com
+  Railway                → https://railway.app
+  Fly.io                 → https://fly.io
+  Adoptium JDK 21        → https://adoptium.net/temurin/releases/
+  Apache Maven           → https://maven.apache.org/download.cgi
+  Docker Desktop         → https://www.docker.com/products/docker-desktop/
+
+================================================================

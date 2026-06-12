@@ -1,0 +1,15 @@
+target/
+*.class
+*.jar
+*.war
+*.ear
+.env
+*.log
+logs/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+*.orig
+firebase-service-account.json

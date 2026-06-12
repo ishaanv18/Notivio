@@ -1,0 +1,22 @@
+{
+  "name": "Notivio",
+  "short_name": "Notivio",
+  "description": "AI-powered Gmail Task & Deadline Detector",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#05050a",
+  "theme_color": "#05050a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

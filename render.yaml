@@ -1,0 +1,41 @@
+# ============================================================
+# Render.com Deployment Configuration
+# Free tier: 512MB RAM, shared CPU, sleeps after inactivity
+# Keep-alive scheduler prevents sleeping
+# ============================================================
+
+services:
+  - type: web
+    name: notivio-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_BASE64
+        sync: false
+      - key: APP_BASE_URL
+        sync: false
+      - key: KEEPALIVE_URL
+        sync: false
