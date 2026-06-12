@@ -19,7 +19,8 @@ export default function LandingPage() {
   }, [isAuthenticated, router]);
 
   const handleLogin = () => {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8080';
+    window.location.href = `${backendUrl}/oauth2/authorization/google`;
   };
 
   return (
